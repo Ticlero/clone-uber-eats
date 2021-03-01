@@ -1,6 +1,16 @@
 import { ArgsType, Field, InputType } from '@nestjs/graphql';
+import { IsBoolean, IsString, Length } from 'class-validator';
 
-@InputType() //InputType은 각각의 필드들을 구분 안하고 통으로 보내야함
+/**
+ * 
+ * GraphQL => createRestaurantInputType(createRestaurantInput:{
+    name:"test",
+    isVegan:true,
+    address:"test2",    
+    ownersName:"test3"
+  })
+ */
+@InputType()
 export class CreateRestaurantInputDto {
   @Field((type) => String)
   name!: string;
@@ -12,14 +22,25 @@ export class CreateRestaurantInputDto {
   ownersName: string;
 }
 
-@ArgsType() //InputType은 각각의 필드들을 부분 적으로 보낼 수 있게 함
+/**
+ * GraphQL => createRestaurantArgsType(name:"shshs", isVegan:true, address:"sgsg", ownersName:"tear")
+ */
+@ArgsType()
 export class CreateRestaurantArgDto {
   @Field((type) => String)
+  @IsString()
+  @Length(5, 10)
   name: string;
+
   @Field((type) => Boolean)
+  @IsBoolean()
   isVegan: boolean;
+
   @Field((type) => String)
+  @IsString()
   address: string;
+
   @Field((type) => String)
+  @IsString()
   ownersName: string;
 }
