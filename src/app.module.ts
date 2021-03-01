@@ -6,6 +6,7 @@ import { DogsModule } from './dogs/dogs.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule } from '@nestjs/config';
 import * as Joi from 'joi'; // typescript or nestjs module이 아닌 순수 javascipt 패키지일 경우 module  가져오는 방법
+import { Restaurant } from './restaurants/entities/restaurant.entity';
 
 @Module({
   imports: [
@@ -34,8 +35,9 @@ import * as Joi from 'joi'; // typescript or nestjs module이 아닌 순수 java
       username: process.env.DB_USERNAME,
       password: process.env.DB_PASSWORD,
       database: process.env.DB_NAME,
-      synchronize: true,
-      logging: true,
+      synchronize: process.env.NODE_ENV !== 'prod',
+      logging: process.env.NODE_ENV !== 'prod',
+      entities: [Restaurant],
     }),
     RestaurantsModule,
     DogsModule,
