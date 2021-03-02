@@ -1,5 +1,6 @@
-import { ArgsType, Field, InputType } from '@nestjs/graphql';
+import { ArgsType, Field, InputType, OmitType } from '@nestjs/graphql';
 import { IsBoolean, IsString, Length } from 'class-validator';
+import { Restaurant } from '../entities/restaurant.entity';
 
 /**
  * 
@@ -24,23 +25,17 @@ export class CreateRestaurantInputDto {
 
 /**
  * GraphQL => createRestaurantArgsType(name:"shshs", isVegan:true, address:"sgsg", ownersName:"tear")
+ *
+ * OmitType( entity, 제외할 field, 새로 만들어질 class의 type )
+ * OmitType은 entity를 받아서 새로운 객체를 만들어주는 역할을 한다.
+ * 3가지 arguments가 들어가는데, 첫 번째 인자는 base가 될 entity,
+ * 두 번째 인자는 base entity의 field중 제외하고 만들고 싶은 field
+ * 세 번째 인자는 새로 만들어질 class의 type을 정한다. default로  base entity의 type을 따름
+ * 명시해 주면 변경됨
  */
-@ArgsType()
-export class CreateRestaurantArgDto {
-  @Field((type) => String)
-  @IsString()
-  @Length(5, 10)
-  name: string;
-
-  @Field((type) => Boolean)
-  @IsBoolean()
-  isVegan: boolean;
-
-  @Field((type) => String)
-  @IsString()
-  address: string;
-
-  @Field((type) => String)
-  @IsString()
-  ownersName: string;
-}
+@InputType()
+export class CreateRestaurantArgDto extends OmitType(
+  Restaurant,
+  ['id'],
+  InputType,
+) {}

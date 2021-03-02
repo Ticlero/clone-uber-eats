@@ -44,10 +44,16 @@ export class RestaurantResolver {
   }
 
   @Mutation((returns) => Boolean)
-  createRestaurantArgsType(
-    @Args() CreateRestaurantArgDto: CreateRestaurantArgDto,
-  ): boolean {
-    console.log(CreateRestaurantArgDto);
-    return true;
+  async createRestaurantArgsType(
+    @Args('input') CreateRestaurantArgDto: CreateRestaurantArgDto,
+  ): Promise<boolean> {
+    // async function을 사용 할 때는 Promise와 value를 써야 함
+    try {
+      await this.restaurantService.createRestaurant(CreateRestaurantArgDto);
+      return true;
+    } catch (e) {
+      console.log(e);
+      return false;
+    }
   }
 }

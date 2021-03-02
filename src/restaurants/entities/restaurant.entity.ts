@@ -1,6 +1,7 @@
 //데이터베이스의 모델이라고 생각
 
 import { Field, Int, ObjectType } from '@nestjs/graphql';
+import { IsBoolean, IsString, Length } from 'class-validator';
 import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
 @ObjectType() //graphQL의 Schema
@@ -12,21 +13,27 @@ export class Restaurant {
 
   @Field((type) => String)
   @Column()
+  @IsString()
+  @Length(5, 10)
   name: string;
 
   @Field((type) => Boolean)
   @Column()
+  @IsBoolean()
   isVegan?: boolean;
 
   @Field((type) => String)
   @Column()
+  @IsString()
   address: string;
 
   @Field((type) => String)
   @Column()
+  @IsString()
   ownersName: string;
 
   @Field((type) => String)
   @Column()
+  @IsString()
   categoryName: string;
 }
