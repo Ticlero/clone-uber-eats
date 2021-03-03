@@ -3,6 +3,7 @@ import {
   CreateRestaurantArgDto,
   CreateRestaurantInputDto,
 } from './dtos/create-restaurant.dto';
+import { UpdateRestaurantDto } from './dtos/update.restaurant.dto';
 import { Restaurant } from './entities/restaurant.entity';
 import { RestaurantService } from './restaurants.service';
 
@@ -47,9 +48,33 @@ export class RestaurantResolver {
   async createRestaurantArgsType(
     @Args('input') CreateRestaurantArgDto: CreateRestaurantArgDto,
   ): Promise<boolean> {
+    console.log(CreateRestaurantArgDto);
     // async function을 사용 할 때는 Promise와 value를 써야 함
     try {
       await this.restaurantService.createRestaurant(CreateRestaurantArgDto);
+      return true;
+    } catch (e) {
+      console.log(e);
+      return false;
+    }
+  }
+
+  // update를 하기 위해 id를 가져오는 첫 번째 방법
+  // @Mutation((returns) => Boolean)
+  // async updateRestaurant(
+  //   @Args('id') id: number,
+  //   @Args('data') data: UpdateRestaurantDto,
+  // ) {
+  //   return true;
+  // }
+
+  // 두 번째 방법
+  @Mutation((returns) => Boolean)
+  async updateRestaurant(
+    @Args('input') updateRestaurantDto: UpdateRestaurantDto,
+  ): Promise<boolean> {
+    try {
+      await this.restaurantService.updateRestaurant(updateRestaurantDto);
       return true;
     } catch (e) {
       console.log(e);

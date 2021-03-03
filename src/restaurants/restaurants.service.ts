@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CreateRestaurantArgDto } from './dtos/create-restaurant.dto';
+import { UpdateRestaurantDto } from './dtos/update.restaurant.dto';
 import { Restaurant } from './entities/restaurant.entity';
 
 @Injectable()
@@ -20,5 +21,8 @@ export class RestaurantService {
     // newRestaurant.name = CreateRestaurantArgDto.name;
     const newRestaurant = this.restaurants.create(createRestaurantArgDto);
     return this.restaurants.save(newRestaurant);
+  }
+  updateRestaurant({ id, data }: UpdateRestaurantDto) {
+    return this.restaurants.update(id, { ...data }); // update함수의 첫 번째 인자는 테이블에서 변경할 데이터를 찾는 기준이 되는 필드, 두 번째 인자는 변경될  데이터
   }
 }

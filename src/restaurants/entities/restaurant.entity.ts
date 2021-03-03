@@ -1,7 +1,7 @@
 //데이터베이스의 모델이라고 생각
 
 import { Field, Int, ObjectType } from '@nestjs/graphql';
-import { IsBoolean, IsString, Length } from 'class-validator';
+import { IsBoolean, IsOptional, IsString, Length } from 'class-validator';
 import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
 @ObjectType() //graphQL의 Schema
@@ -14,11 +14,12 @@ export class Restaurant {
   @Field((type) => String)
   @Column()
   @IsString()
-  @Length(5, 10)
+  @Length(5, 20)
   name: string;
 
-  @Field((type) => Boolean)
-  @Column()
+  @Field((type) => Boolean, { defaultValue: true }) // graphQL을 위한 default 값 지정 nullable과는 다름
+  @Column({ default: true }) // 값이 비어 있을 경우 default값 지정 - DB를 위함
+  @IsOptional() // validation 해당 필드 값이 비어 있으면 무시함
   @IsBoolean()
   isVegan?: boolean;
 
