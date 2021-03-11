@@ -8,6 +8,8 @@ import { Restaurant } from './restaurants/entities/restaurant.entity';
 import { UsersModule } from './users/users.module';
 import { CommonModule } from './common/common.module';
 import { User } from './users/entities/user.entity';
+import { join } from 'node:path';
+import { JwtModule } from './jwt/jwt.module';
 
 @Module({
   imports: [
@@ -27,6 +29,7 @@ import { User } from './users/entities/user.entity';
         DB_USERNAME: Joi.string().required(),
         DB_PASSWORD: Joi.string().required(),
         DB_NAME: Joi.string().required(),
+        SECRET_KEY: Joi.string().required(), // token을 지정하기 위해 사용되는 privateKey -jwt에서 사용
       }), //환경변수로 들어오는 값을 유효성 검사하기 위한 옵션
     }),
     TypeOrmModule.forRoot({
@@ -42,6 +45,7 @@ import { User } from './users/entities/user.entity';
     }),
     UsersModule,
     CommonModule,
+    JwtModule,
   ],
   controllers: [],
   providers: [],
