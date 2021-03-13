@@ -1,4 +1,9 @@
-import { Module } from '@nestjs/common';
+import {
+  MiddlewareConsumer,
+  Module,
+  NestModule,
+  RequestMethod,
+} from '@nestjs/common';
 import { GraphQLModule } from '@nestjs/graphql';
 import { RestaurantsModule } from './restaurants/restaurants.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -10,6 +15,8 @@ import { CommonModule } from './common/common.module';
 import { User } from './users/entities/user.entity';
 import { join } from 'node:path';
 import { JwtModule } from './jwt/jwt.module';
+import { JwtMiddleware } from './jwt/jwt.middleware';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
@@ -17,6 +24,7 @@ import { JwtModule } from './jwt/jwt.module';
       //스키마 파일을 자동으로 생성, true로할 경우 메모리에 스키마 파일을 저장
       //autoSchemaFile: join(process.cwd(), 'src/schema.gql'),
       autoSchemaFile: true,
+      context: ({ req }) => ({ user: req['user'] }),
     }),
     ConfigModule.forRoot({
       isGlobal: true, //App 어디서나 config 모듈에 접근 할 수 있도록 하는 옵션
@@ -29,7 +37,7 @@ import { JwtModule } from './jwt/jwt.module';
         DB_USERNAME: Joi.string().required(),
         DB_PASSWORD: Joi.string().required(),
         DB_NAME: Joi.string().required(),
-        SECRET_KEY: Joi.string().required(), // token을 지정하기 위해 사용되는 privateKey -jwt에서 사용
+        PRIVATE_KEY: Joi.string().required(), // token을 지정하기 위해 사용되는 privateKey -jwt에서 사용
       }), //환경변수로 들어오는 값을 유효성 검사하기 위한 옵션
     }),
     TypeOrmModule.forRoot({
@@ -43,11 +51,20 @@ import { JwtModule } from './jwt/jwt.module';
       logging: process.env.NODE_ENV !== 'prod',
       entities: [User],
     }),
+    JwtModule.forRoot({
+      privateKey: process.env.PRIVATE_KEY,
+    }),
     UsersModule,
-    CommonModule,
-    JwtModule,
+    AuthModule,
   ],
   controllers: [],
   providers: [],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consummer: MiddlewareConsumer) {
+    consummer.apply(JwtMiddleware).forRoutes({
+      path: '/graphql',
+      method: RequestMethod.POST,
+    });
+  }
+}
