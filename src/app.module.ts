@@ -5,18 +5,15 @@ import {
   RequestMethod,
 } from '@nestjs/common';
 import { GraphQLModule } from '@nestjs/graphql';
-import { RestaurantsModule } from './restaurants/restaurants.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule } from '@nestjs/config';
 import * as Joi from 'joi'; // typescript or nestjs module이 아닌 순수 javascipt 패키지일 경우 module  가져오는 방법
-import { Restaurant } from './restaurants/entities/restaurant.entity';
 import { UsersModule } from './users/users.module';
-import { CommonModule } from './common/common.module';
 import { User } from './users/entities/user.entity';
-import { join } from 'node:path';
 import { JwtModule } from './jwt/jwt.module';
 import { JwtMiddleware } from './jwt/jwt.middleware';
 import { AuthModule } from './auth/auth.module';
+import { Verification } from './users/entities/verification.entity';
 
 @Module({
   imports: [
@@ -49,7 +46,7 @@ import { AuthModule } from './auth/auth.module';
       database: process.env.DB_NAME,
       synchronize: process.env.NODE_ENV !== 'prod',
       logging: process.env.NODE_ENV !== 'prod',
-      entities: [User],
+      entities: [User, Verification],
     }),
     JwtModule.forRoot({
       privateKey: process.env.PRIVATE_KEY,
