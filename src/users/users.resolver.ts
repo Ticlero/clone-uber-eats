@@ -104,6 +104,7 @@ export class UsersResolver {
     @Args('input') verifyEmailInput: VerifyEmailInput,
   ): Promise<VerifyEmailOutput> {
     await this.usersService.verifyEmail(verifyEmailInput.code);
+    console.log();
     return {
       ok: true,
     };
