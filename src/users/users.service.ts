@@ -55,7 +55,11 @@ export class UsersService {
     //2. check if the password is correct 로그인에 사용된 비밀번호가 맞는지 확인
     //3. make a JWT and give it to user JWT를 만들고 user에게 주기
     try {
-      const user = await this.users.findOne({ email });
+      const user = await this.users.findOne(
+        { email },
+        { select: ['password', 'id'] },
+      );
+      console.log(user);
       if (!user) {
         return {
           ok: false,
@@ -107,14 +111,21 @@ export class UsersService {
 
   async verifyEmail(code: string): Promise<boolean> {
     // step 1. 인증하려는 유저의 verification 찾기
-    const verification = await this.verification.findOne(
-      { code },
-      { relations: ['user'] },
-    );
-    if (verification) {
-      verification.user.verified = true;
-      this.users.save(verification.user);
+    try {
+      const verification = await this.verification.findOne(
+        { code },
+        { relations: ['user'] },
+      );
+      if (verification) {
+        verification.user.verified = true;
+        console.log(verification.user);
+        this.users.save(verification.user);
+        return true;
+      }
+      return false;
+    } catch (e) {
+      console.log(e);
+      return false;
     }
-    return false;
   }
 }
