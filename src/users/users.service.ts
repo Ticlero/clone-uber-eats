@@ -5,8 +5,10 @@ import { CreateAccountInput } from './dtos/create-account.dto';
 import { LoginInput } from './dtos/login.dto';
 import { User } from './entities/user.entity';
 import { JwtService } from 'src/jwt/jwt.service';
-import { EditProfileInput } from './dtos/edit-profile.dto';
+import { EditProfileInput, EditProfileOutput } from './dtos/edit-profile.dto';
 import { Verification } from './entities/verification.entity';
+import { UserProfileOutput } from './dtos/user-profile.dto';
+import { VerifyEmailInput, VerifyEmailOutput } from './dtos/verify-email.dto';
 
 @Injectable()
 export class UsersService {
@@ -89,27 +91,54 @@ export class UsersService {
       };
     }
   }
-  async findById(id: number): Promise<User> {
-    return this.users.findOne({ id });
+  async findById(id: number): Promise<UserProfileOutput> {
+    try {
+      const user = await this.users.findOne({ id });
+      if (!user) {
+        throw Error('User Not Found');
+      }
+      return {
+        ok: true,
+        user,
+      };
+    } catch (e) {
+      return {
+        ok: false,
+        error: 'User Not Found',
+      };
+    }
   }
 
   async editProfile(
     userId: number,
     { email, password }: EditProfileInput,
-  ): Promise<User> {
-    const user = await this.users.findOne(userId);
-    if (email) {
-      user.email = email;
-      user.verified = false;
-      await this.verification.save(this.verification.create({ user }));
+  ): Promise<EditProfileOutput> {
+    try {
+      const user = await this.users.findOne(userId);
+      if (email) {
+        user.email = email;
+        user.verified = false;
+        await this.verification.save(this.verification.create({ user }));
+      }
+      if (password) {
+        user.password = password;
+      }
+      const savedUser = this.users.save(user);
+      if (!savedUser) {
+        throw Error('Updating Faile');
+      }
+      return {
+        ok: true,
+      };
+    } catch (e) {
+      return {
+        ok: false,
+        error: 'Updating Faile',
+      };
     }
-    if (password) {
-      user.password = password;
-    }
-    return this.users.save(user);
   }
 
-  async verifyEmail(code: string): Promise<boolean> {
+  async verifyEmail(code: string): Promise<VerifyEmailOutput> {
     // step 1. 인증하려는 유저의 verification 찾기
     try {
       const verification = await this.verification.findOne(
@@ -118,14 +147,28 @@ export class UsersService {
       );
       if (verification) {
         verification.user.verified = true;
-        console.log(verification.user);
-        this.users.save(verification.user);
-        return true;
+        const v = await this.users.save(verification.user);
+        await this.verification.delete(verification.id);
+        if (!v) {
+          return {
+            ok: false,
+            error: 'Verification Updating Error',
+          };
+        }
+        return {
+          ok: true,
+        };
       }
-      return false;
+      return {
+        ok: false,
+        error: 'Unmatched Code',
+      };
     } catch (e) {
       console.log(e);
-      return false;
+      return {
+        ok: false,
+        error: e,
+      };
     }
   }
 }
