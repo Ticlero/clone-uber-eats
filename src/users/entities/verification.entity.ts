@@ -7,7 +7,7 @@ import { User } from './user.entity';
 @InputType({ isAbstract: true })
 @ObjectType()
 @Entity()
-export class Verification extends CoreEntity {
+export class Verifications extends CoreEntity {
   @Column()
   @Field((type) => String)
   code: string;

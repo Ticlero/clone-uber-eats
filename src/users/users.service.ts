@@ -6,18 +6,20 @@ import { LoginInput } from './dtos/login.dto';
 import { User } from './entities/user.entity';
 import { JwtService } from 'src/jwt/jwt.service';
 import { EditProfileInput, EditProfileOutput } from './dtos/edit-profile.dto';
-import { Verification } from './entities/verification.entity';
+import { Verifications } from './entities/verification.entity';
 import { UserProfileOutput } from './dtos/user-profile.dto';
-import { VerifyEmailInput, VerifyEmailOutput } from './dtos/verify-email.dto';
+import { VerifyEmailOutput } from './dtos/verify-email.dto';
+import { MailService } from 'src/mail/mail.service';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(User)
     private readonly users: Repository<User>,
-    @InjectRepository(Verification)
-    private readonly verification: Repository<Verification>,
+    @InjectRepository(Verifications)
+    private readonly verifications: Repository<Verifications>,
     private readonly jwtService: JwtService,
+    private readonly mailService: MailService,
   ) {}
 
   async createAccount({
@@ -37,12 +39,12 @@ export class UsersService {
         this.users.create({ email, password, role }),
       );
 
-      await this.verification.save(
-        this.verification.create({
+      const verification = await this.verifications.save(
+        this.verifications.create({
           user,
         }),
       );
-
+      this.mailService.sendVerificationEmail(user.email, verification.code);
       return { ok: true };
     } catch (e) {
       return { ok: false, error: "Couldn't create account" }; //error massage  ok and message
@@ -61,7 +63,6 @@ export class UsersService {
         { email },
         { select: ['password', 'id'] },
       );
-      console.log(user);
       if (!user) {
         return {
           ok: false,
@@ -118,7 +119,10 @@ export class UsersService {
       if (email) {
         user.email = email;
         user.verified = false;
-        await this.verification.save(this.verification.create({ user }));
+        const verification = await this.verifications.save(
+          this.verifications.create({ user }),
+        );
+        this.mailService.sendVerificationEmail(user.email, verification.code);
       }
       if (password) {
         user.password = password;
@@ -141,14 +145,14 @@ export class UsersService {
   async verifyEmail(code: string): Promise<VerifyEmailOutput> {
     // step 1. 인증하려는 유저의 verification 찾기
     try {
-      const verification = await this.verification.findOne(
+      const verification = await this.verifications.findOne(
         { code },
         { relations: ['user'] },
       );
       if (verification) {
         verification.user.verified = true;
         const v = await this.users.save(verification.user);
-        await this.verification.delete(verification.id);
+        await this.verifications.delete(verification.id);
         if (!v) {
           return {
             ok: false,

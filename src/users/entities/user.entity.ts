@@ -55,7 +55,6 @@ export class User extends CoreEntity {
   //User 객체를 불러오는 모든 곳에 이 함수를 사용할 수 있게 하기 위해 생성
   async checkPassword(aPassword: string): Promise<boolean> {
     try {
-      console.log(aPassword, this.password);
       const ok = await bcrypt.compare(aPassword, this.password);
       return ok;
     } catch (e) {
